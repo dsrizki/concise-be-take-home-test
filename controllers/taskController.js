@@ -1,50 +1,76 @@
 const { task, user } = require('../models');
 
-const createTask = async (req, res, next) => {
-  try {
-    const { name, deadline, user_id } = req.body;
+const createTask = (req, res, next) => {
+  const { name, deadline, user_id } = req.body;
 
-    if (user_id) {
-      const findUser = await user.findByPk(+user_id);
+  if (!user_id) {
+    throw { name: 'Empty | NULL user_id' };
+  }
 
-      if (!findUser) {
-        throw { name: 'Error not found' };
-      }
-    }
+  // TODO async await
+  // const findUser = await user.findByPk(+user_id);
 
-    const taskCreated = await task.create({
+  // const taskCreated = await task.create({
+  //   name,
+  //   deadline,
+  //   user_id: +user_id
+  // });
+
+  // TODO promise
+  Promise.all([
+    user.findByPk(+user_id),
+    task.create({
       name,
       deadline,
-      user_id
+      user_id: +user_id
+    })
+  ])
+    .then((result) => {
+      const [user, taskCreated] = result;
+      if (!user) {
+        throw { name: 'Error not found' };
+      }
+      res.status(201).json({
+        message: 'Task created',
+        data: taskCreated
+      });
+    })
+    .catch((error) => {
+      if (error.name === 'SequelizeForeignKeyConstraintError') {
+        next({ name: 'user_id not found' });
+      } else {
+        next(error);
+      }
     });
-
-    res.status(201).json({
-      message: 'Task created',
-      data: taskCreated
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const updateTaskById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { name, deadline, user_id } = req.body;
+const updateTaskById = (req, res, next) => {
+  const { id } = req.params;
+  const { name, deadline, user_id } = req.body;
 
-    const findTask = await task.findByPk(+id);
+  // TODO async await
+  // const findTask = await task.findByPk(+id);
 
-    if (!findTask) {
-      throw { name: 'Error not found' };
-    }
+  // const findUser = await user.findByPk(+user_id);
 
-    const findUser = await user.findByPk(+user_id);
+  // await task.update(
+  //   {
+  //     name: name,
+  //     deadline: deadline,
+  //     user_id: user_id
+  //   },
+  //   {
+  //     where: {
+  //       id: +id
+  //     }
+  //   }
+  // );
 
-    if (!findUser) {
-      throw { name: 'Error not found' };
-    }
-
-    await task.update(
+  // TODO promise
+  Promise.all([
+    task.findByPk(+id),
+    user.findByPk(+user_id),
+    task.update(
       {
         name: name,
         deadline: deadline,
@@ -55,111 +81,161 @@ const updateTaskById = async (req, res, next) => {
           id: +id
         }
       }
-    );
+    )
+  ])
+    .then((result) => {
+      const [task, user] = result;
+      if (!task) {
+        throw { name: 'Error not found' };
+      }
+      if (!user) {
+        throw { name: 'Error not found' };
+      }
 
-    findTask.name = name;
-    findTask.deadline = deadline;
-    findTask.user_id = user_id;
+      task.name = name;
+      task.deadline = deadline;
+      task.user_id = user_id;
 
-    res.status(200).json({
-      message: 'Task updated',
-      data: findTask
+      res.status(200).json({
+        message: 'Task updated',
+        data: task
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const deleteTaskById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
+const deleteTaskById = (req, res, next) => {
+  const { id } = req.params;
 
-    const findTask = await task.findByPk(+id);
+  // TODO async await
+  // const findTask = await task.findByPk(+id);
 
-    if (!findTask) {
-      throw { name: 'Error not found' };
-    }
+  // await user.destroy({
+  //   where: {
+  //     id: +id
+  //   }
+  // });
 
-    await user.destroy({
+  // TODO promise
+  Promise.all([
+    task.findByPk(+id),
+    user.destroy({
       where: {
         id: +id
       }
+    })
+  ])
+    .then((result) => {
+      const [task] = result;
+      if (!task) {
+        throw { name: 'Error not found' };
+      }
+      res.status(200).json({
+        message: `Task \"${task.name}\" deleted`
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-
-    res.status(200).json({
-      message: `Task \"${findTask.name}\" deleted`
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const getTaskById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
+const getTaskById = (req, res, next) => {
+  const { id } = req.params;
 
-    const findTask = await task.findOne({
+  // TODO async await
+  // const findTask = await task.findOne({
+  //   where: {
+  //     id: +id
+  //   },
+  //   include: {
+  //     model: user
+  //   }
+  // });
+
+  // TODO promise
+  task
+    .findOne({
       where: {
         id: +id
       },
       include: {
         model: user
       }
+    })
+    .then((task) => {
+      if (!task) {
+        throw { name: 'Error not found' };
+      }
+      res.status(200).json({
+        data: task
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-
-    if (!findTask) {
-      throw { name: 'Error not found' };
-    }
-
-    res.status(200).json({
-      data: findTask
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const getAllTasks = async (req, res, next) => {
-  try {
-    const findTasks = await task.findAll();
+const getAllTasks = (req, res, next) => {
+  // TODO async await
+  // const findTasks = await task.findAll();
 
-    res.status(200).json({
-      data: findTasks
+  // TODO promise
+  task
+    .findAll()
+    .then((tasks) => {
+      res.status(200).json({
+        data: tasks
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const getUserDataById = async (req, res, next) => {
-  try {
-    const { user_id } = req.params;
+const getUserDataById = (req, res, next) => {
+  const { user_id } = req.params;
 
-    const findUser = await user.findByPk(+user_id);
+  // TODO async await
+  // const findUser = await user.findByPk(+user_id);
 
-    if (!findUser) {
-      throw { name: 'Error not found' };
-    }
+  // const findUserTasks = await task.findAll({
+  //   where: {
+  //     user_id: +user_id
+  //   },
+  //   include: {
+  //     model: user
+  //   }
+  // });
 
-    const findUsers = await task.findAll({
+  // TODO promise
+  Promise.all([
+    user.findByPk(+user_id),
+    task.findAll({
       where: {
         user_id: +user_id
       },
       include: {
         model: user
       }
+    })
+  ])
+    .then((result) => {
+      const [user, userTasks] = result;
+      if (!user) {
+        throw { name: 'Error not found' };
+      }
+      if (!userTasks) {
+        throw { name: 'Error not found' };
+      }
+      res.status(200).json({
+        data: userTasks
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-
-    if (!findUsers) {
-      throw { name: 'Error not found' };
-    }
-
-    res.status(200).json({
-      data: findUsers
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
 module.exports = {

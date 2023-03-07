@@ -1,35 +1,54 @@
+const { resolve } = require('path');
 const { group, member, user } = require('../models');
 
-const createGroup = async (req, res, next) => {
-  try {
-    const { name, description } = req.body;
+const createGroup = (req, res, next) => {
+  const { name, description } = req.body;
 
-    const groupCreated = await group.create({
+  // TODO async await
+  // const groupCreated = await group.create({
+  //   name,
+  //   description
+  // });
+
+  group
+    .create({
       name,
       description
+    })
+    .then((groupCreated) => {
+      res.status(201).json({
+        message: 'Group created',
+        data: groupCreated
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-
-    res.status(201).json({
-      message: 'Group created',
-      data: groupCreated
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const updateGroupById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { name, description } = req.body;
+const updateGroupById = (req, res, next) => {
+  const { id } = req.params;
+  const { name, description } = req.body;
 
-    const findGroup = await group.findByPk(+id);
+  // TODO async await
+  // const findGroup = await group.findByPk(+id);
 
-    if (!findGroup) {
-      throw { name: 'Error not found' };
-    }
+  // await user.update(
+  //   {
+  //     name: name,
+  //     description: description
+  //   },
+  //   {
+  //     where: {
+  //       id: +id
+  //     }
+  //   }
+  // );
 
-    await user.update(
+  // TODO promise
+  Promise.all([
+    group.findByPk(+id),
+    group.update(
       {
         name: name,
         description: description
@@ -39,49 +58,80 @@ const updateGroupById = async (req, res, next) => {
           id: +id
         }
       }
-    );
+    )
+  ])
+    .then((result) => {
+      const [group] = result;
+      if (!group) {
+        throw { name: 'Error not found' };
+      }
+      group.name = name;
+      group.description = description;
 
-    findGroup.name = name;
-    findGroup.description = description;
-
-    res.status(200).json({
-      message: 'Group updated',
-      data: findGroup
+      res.status(200).json({
+        message: 'Group updated',
+        data: group
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const deleteGroupById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
+const deleteGroupById = (req, res, next) => {
+  const { id } = req.params;
 
-    const findGroup = await group.findByPk(+id);
+  // TODO async await
+  // const findGroup = await group.findByPk(+id);
 
-    if (!findGroup) {
-      throw { name: 'Error not found' };
-    }
+  // await group.destroy({
+  //   where: {
+  //     id: +id
+  //   }
+  // });
 
-    await group.destroy({
+  // TODO promise
+  Promise.all([
+    group.findByPk(+id),
+    group.destroy({
       where: {
         id: +id
       }
+    })
+  ])
+    .then((result) => {
+      const [group] = result;
+      if (!group) {
+        throw { name: 'Error not found' };
+      }
+      res.status(200).json({
+        message: `Group \"${group.name}\" deleted`
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-
-    res.status(200).json({
-      message: `Group \"${findGroup.name}\" deleted`
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const getGroupById = async (req, res, next) => {
-  try {
-    const { id } = req.params;
+const getGroupById = (req, res, next) => {
+  const { id } = req.params;
 
-    const findGroup = await group.findOne({
+  // TODO async await
+  // const findGroup = await group.findOne({
+  //   where: {
+  //     id: +id
+  //   },
+  //   include: {
+  //     model: member,
+  //     include: {
+  //       model: user
+  //     }
+  //   }
+  // });
+
+  // TODO promise
+  group
+    .findOne({
       where: {
         id: +id
       },
@@ -91,30 +141,35 @@ const getGroupById = async (req, res, next) => {
           model: user
         }
       }
+    })
+    .then((group) => {
+      if (!group) {
+        throw { name: 'Error not found' };
+      }
+      res.status(200).json({
+        data: group
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-
-    if (!findGroup) {
-      throw { name: 'Error not found' };
-    }
-
-    res.status(200).json({
-      data: findGroup
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
-const getAllGroups = async (req, res, next) => {
-  try {
-    const findGroups = await group.findAll();
+const getAllGroups = (req, res, next) => {
+  // TODO async await
+  // const findGroups = await group.findAll();
 
-    res.status(200).json({
-      data: findGroups
+  // TODO promise
+  group
+    .findAll()
+    .then((groups) => {
+      res.status(200).json({
+        data: groups
+      });
+    })
+    .catch((error) => {
+      next(error);
     });
-  } catch (error) {
-    next(error);
-  }
 };
 
 module.exports = {
