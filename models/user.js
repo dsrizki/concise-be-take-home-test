@@ -3,7 +3,9 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class user extends Model {
     static associate(models) {
-      user.hasMany(models.member, { foreignkey: 'user_id' });
+      user.hasMany(models.member, {
+        foreignKey: 'user_id'
+      });
       user.hasMany(models.task, { foreignKey: 'user_id' });
     }
   }
@@ -13,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-          notNull: { msg: 'Mame is required' },
+          notNull: { msg: 'Name is required' },
           notEmpty: { msg: 'Name is required' }
         }
       },
