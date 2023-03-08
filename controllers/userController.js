@@ -157,7 +157,6 @@ const getUserById = (req, res, next) => {
       }
     })
     .then((user) => {
-      console.log(user);
       if (!user) {
         throw { name: 'Error not found' };
       }

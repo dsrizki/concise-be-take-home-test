@@ -28,7 +28,7 @@ const errorHandler = (err, req, res, next) => {
       break;
     case 'Empty | NULL user_id':
       res.status(400).json({
-        message: 'User is required'
+        message: 'user_id is required'
       });
       break;
     case 'user_id not found':
@@ -37,9 +37,9 @@ const errorHandler = (err, req, res, next) => {
       });
       break;
     default:
-      console.log(err.name);
       res.status(500).json({
-        message: 'Internal Server Error'
+        message: 'Internal Server Error',
+        error: err
       });
       break;
   }
