@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           isInt: {
             args: true,
-            msg: 'User must be integer'
+            msg: 'user_id must be integer'
           },
           notNull: { msg: 'user_id is required' },
           notEmpty: { msg: 'user_id is required' }

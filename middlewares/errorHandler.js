@@ -28,7 +28,7 @@ const errorHandler = (err, req, res, next) => {
       break;
     case 'Empty | NULL user_id':
       res.status(400).json({
-        message: 'User is required'
+        message: 'user_id is required'
       });
       break;
     case 'user_id not found':
